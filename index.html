@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Indicador BaBi</title>
+
+<style>
+body{
+    background:#000;
+    color:#fff;
+    font-family:Arial, Helvetica, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+/* LOGIN */
+.login{
+    width:360px;
+    background:#0b0b0b;
+    padding:25px;
+    border-radius:16px;
+    box-shadow:0 0 30px rgba(255,0,0,.4);
+    text-align:center;
+}
+
+.login h2{
+    color:#ff0000;
+    margin-bottom:10px;
+}
+
+.login input{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    margin-bottom:10px;
+    background:#111;
+    color:#fff;
+}
+
+.login button{
+    width:100%;
+    padding:12px;
+    background:#ff0000;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+/* APP */
+.app{
+    width:380px;
+    background:#0b0b0b;
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 0 30px rgba(255,0,0,.3);
+    display:none;
+}
+
+.logo{
+    text-align:center;
+    font-size:32px;
+    font-weight:bold;
+    color:#ff0000;
+}
+
+.logo span{
+    color:#fff;
+    font-size:14px;
+    display:block;
+}
+
+.status{
+    text-align:center;
+    margin-top:5px;
+    font-size:13px;
+}
+
+.status b{
+    color:#00ff00;
+}
+
+.msg{
+    text-align:center;
+    margin:15px 0;
+    font-size:14px;
+    color:#ccc;
+}
+
+select, button{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:8px;
+    border:none;
+    font-size:15px;
+}
+
+select{
+    background:#111;
+    color:#fff;
+}
+
+button{
+    background:#ff0000;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    background:#333;
+}
+
+.card{
+    background:#000;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+    border:1px solid #222;
+    text-align:center;
+}
+
+.call{color:#00ff00;font-weight:bold;}
+.put{color:#ff0000;font-weight:bold;}
+
+.timer{
+    text-align:center;
+    margin:10px 0;
+    font-size:18px;
+    color:#ff0000;
+}
+
+.erro{
+    color:#ff5555;
+    font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="login">
+    <h2>🔐 Indicador BaBi</h2>
+    <p>Acesso restrito</p>
+    <input type="password" id="senha" placeholder="Digite a senha">
+    <button onclick="entrar()">Entrar</button>
+    <p class="erro" id="erro"></p>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+
+    <div class="logo">
+        BABI
+        <span>INDICATOR</span>
+    </div>
+
+    <div class="status">
+        Status indicador: <b>Ativo ●</b>
+    </div>
+
+    <div class="msg">
+        Bem-vindo, Trader.<br>
+        Pronto para fazer dinheiro?<br>
+        Escolha um ativo e o tempo de expiração.
+    </div>
+
+    <select id="corretora">
+        <option>IQ Option</option>
+        <option>Quotex</option>
+        <option>Deriv</option>
+    </select>
+
+    <select id="par">
+        <option>EUR/USD</option>
+        <option>GBP/USD</option>
+        <option>USD/JPY</option>
+        <option>AUD/USD</option>
+    </select>
+
+    <select>
+        <option>1 Minuto (M1)</option>
+    </select>
+
+    <div id="sinal"></div>
+
+    <div class="timer" id="timer">Pronto</div>
+
+    <button id="btn" onclick="gerarSinal()">Gerar Sinal</button>
+
+</div>
+
+<audio id="cash">
+  <source src="https://actions.google.com/sounds/v1/foley/cash_register.ogg" type="audio/ogg">
+</audio>
+
+<script>
+const SENHA_CORRETA = "babi2026";
+let bloqueado = false;
+
+/* LOGIN */
+function entrar(){
+    const s = document.getElementById("senha").value;
+    if(s === SENHA_CORRETA){
+        localStorage.setItem("babi_login","ok");
+        document.getElementById("login").style.display="none";
+        document.getElementById("app").style.display="block";
+    }else{
+        document.getElementById("erro").innerText="Senha incorreta";
+    }
+}
+
+if(localStorage.getItem("babi_login")==="ok"){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+}
+
+/* SINAL */
+function gerarSinal(){
+    if(bloqueado) return;
+
+    bloqueado = true;
+    document.getElementById("btn").disabled = true;
+
+    const par = document.getElementById("par").value;
+    const corretora = document.getElementById("corretora").value;
+    const dir = Math.random() > 0.5 ? "CALL" : "PUT";
+    const cls = dir === "CALL" ? "call" : "put";
+
+    const agora = new Date();
+    const entrada = new Date(agora.getTime() + 5*60000);
+    const hora = entrada.toLocaleTimeString("pt-PT",{hour:'2-digit',minute:'2-digit'});
+
+    document.getElementById("sinal").innerHTML = `
+        <div class="card">
+            Corretora: ${corretora}<br>
+            Par: ${par}<br>
+            <span class="${cls}">${dir}</span> • M1<br>
+            Entrada: ${hora}
+        </div>
+    `;
+
+    document.getElementById("cash").play();
+
+    let t = 120;
+    document.getElementById("timer").innerText = `Aguarde ${t}s`;
+
+    const i = setInterval(()=>{
+        t--;
+        document.getElementById("timer").innerText = `Aguarde ${t}s`;
+        if(t<=0){
+            clearInterval(i);
+            bloqueado = false;
+            document.getElementById("btn").disabled = false;
+            document.getElementById("timer").innerText = "Pronto";
+        }
+    },1000);
+}
+</script>
+
+</body>
+</html>
